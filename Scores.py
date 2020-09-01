@@ -123,7 +123,7 @@ def getGames():
 			elem = 3
 		#Or of not, just add the extra  information
 		elif(elem == 2 and i not in teams):
-			G[count] = G[count]+  " " str(i)
+			G[count] = G[count]+  " " +str(i)
 		#Then add the second team info
 		elif(elem == 3 and i not in teams):
 			G[count] = G[count]+ " " + str(i)
