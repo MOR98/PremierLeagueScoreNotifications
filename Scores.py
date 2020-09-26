@@ -143,64 +143,64 @@ def teamGoalinfo(team):
 		case = str(team)
 
 		if  case == "City":
-			text = "Man City Score!"
+			text = "Man City"
 			ico  = "mci.ico"
 		elif case == "Utd":
-			text = "Man Utd Score!"
+			text = "Man Utd"
 			ico  = "utd.ico"
 		elif case == "Liverpool":
-			text = "Liverpool Score!"
+			text = "Liverpool"
 			ico  = "liv.ico"
 		elif case == "Chelsea":
-			text = "Chelsea Score!"
+			text = "Chelsea"
 			ico  = "chl.ico"
 		elif case == "Fulham":
-			text = "Fulham Score!"
+			text = "Fulham"
 			ico  = "fha.ico"
 		elif case == "Leicester":
-			text = "Leicester Score!"
+			text = "Leicester"
 			ico  = "lei.ico"
 		elif case == "Newcastle":
-			text = "Newcastle Score!"
+			text = "Newcastle"
 			ico  = "ncs.ico"
 		elif case == "Ham":
-			text = "West Ham Score!"
+			text = "West Ham"
 			ico  = "ham.ico"
 		elif case == "Aston":
-			text = "Aston Villa Score!"
+			text = "Aston Villa"
 			ico  = "vil.ico"
 		elif case == "Everton":
-			text = "Everton Score!"
+			text = "Everton"
 			ico  = "evt.ico"
 		elif case == "Bromwich":
-			text = "West Brom Score!"
+			text = "West Brom"
 			ico  = "wba.ico"
 		elif case == "Crystal":
-			text = "Crystal Palace Score!"
+			text = "Crystal Palace"
 			ico  = "pal.ico"
 		elif case == "Tottenham":
-			text = "Tottenham Score!"
+			text = "Tottenham"
 			ico  = "ths.ico"
 		elif case == "Southampton":
-			text = "Southampton Score!"
+			text = "Southampton"
 			ico  = "sfc.ico"
 		elif case == "Burnley":
-			text = "Burnley Score!"
+			text = "Burnley"
 			ico  = "bfc.ico"
 		elif case == "Wolves":
-			text = "Wolves Score!"
+			text = "Wolves"
 			ico  = "wfc.ico"
 		elif case == "Sheff":
-			text = "Sheffield Utd Score!"
+			text = "Sheffield Utd"
 			ico  = "sut.ico"
 		elif case == "Leeds":
-			text = "Leeds Score!"
+			text = "Leeds"
 			ico  = "lds.ico"
 		elif case == "Brighton":
-			text = "Brighton & Hove Albion Score!"
+			text = "Brighton & Hove Albion"
 			ico  = "brf.ico"
 		elif case == "Arsenal":
-			text = "Arsenal Score!"
+			text = "Arsenal"
 			ico  = "ars.ico"
 		
 		#return path and text
@@ -209,47 +209,53 @@ def teamGoalinfo(team):
 
 #Get initial scores
 games = getGames()
-
 while (True):
 	#grab the latest scores
 	currentGames = getGames()
 	k=0
-	i=0
-
 	#check each game 
 	for k in range (len(currentGames)):
 		#for debug
 		print(currentGames[k])
 		print('------------------------')
+		#grab real team names and icons
+		try:
+			teamA,icoA = teamGoalinfo( currentGames[k][0] )
+			teamB,icoB = teamGoalinfo( currentGames[k][2] )
+		except:
+			print("except")
 
-		#if the score of team 1 is different they scored toast accordingly
-		if((currentGames[k][1] != games[k][1]) and currentGames[k][3] == games[k][3]):
-			#first team scored
-			text,ico = teamGoalinfo( currentGames[k][0] )
-			gameinfo=  str(currentGames[k][0])+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+str(currentGames[k][2])
-
-			toaster.show_toast(text, gameinfo, threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
-
-		#if the score of team 2 is different they scored toast accordingly
-		if((currentGames[k][1] == games[k][1]) and currentGames[k][3] != games[k][3]):
-			#Second team scored
-			text,ico = teamGoalinfo( currentGames[k][2] )
-			gameinfo=  str(currentGames[k][0])+" " + str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+str(currentGames[k][2])
-
-			toaster.show_toast( text,gameinfo ,threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
-
-		#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
-		if((type(currentGames[k][1])==int) and (type(games[k][1])==str)):
-			#this means kick off
-			text = str(currentGames[k][0]) + " vs " + str(currentGames[k][2]) + ": kick off"
-			dummy,ico = teamGoalinfo(currentGames[k][0])
-			toaster.show_toast(text, text, threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
+		#create a game info string
+		gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB
+		if(currentGames[k] != games[k]):
+		#there is some change lets see what
+			#default for text, if unchanged there is an issue
+			text = "something went wrong!"
+			#if the score of team 1 is greater they scored toast accordingly
+			if  (currentGames[k][1] > games[k][1]):
+				text = teamA + " goal!"
+				ico = icoA
+			#team a goal count drops
+			elif(currentGames[k][1] < games[k][1]):
+				text = teamA + " goal disallowed!"
+				ico = icoA
+			#if the score of team 2 is greater they scored toast accordingly
+			elif(currentGames[k][3] > games[k][3]):
+				text = teamB + " goal!"
+				ico = icoB
+			#team b goal count drops
+			elif(currentGames[k][3] < games[k][3]):
+				text = teamB + " goal disallowed!"
+				ico = icoB
+			#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
+			elif(type(currentGames[k][1])==int and (type(games[k][1])!=int)):
+				text = teamA + " vs " + teamB + ": kick off"
+				ico = icoA
+				
+			toaster.show_toast(text, gameinfo, threaded=True,icon_path=ico, duration=None)
+				
+		
+		time.sleep(1)
 
 	print('========================')
 	#reset the previous games holder
