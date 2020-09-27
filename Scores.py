@@ -89,7 +89,7 @@ def getGames():
 
 		if(i == 'Content'):flag = 1
 		if(i == 'All'):flag =0
-	
+	print(gamesA)
 	#Team names are duplicated by links, some teams also have similar names 
 	#So we remove to use single unique words for teams
 	i = 0
@@ -104,7 +104,7 @@ def getGames():
 
 	#G will store the score information, scores are of the format Team score Team score
 	#So we fill accordingly
-	G = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+	G = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 	elem = 0
 	count = 0
 	#loop through the text, pull out the team names and scores
@@ -128,10 +128,13 @@ def getGames():
 		#Then add the second team info
 		elif(elem == 3 and i not in teams):
 			G[count][elem] = i
+			elem = 4
+		elif(elem == 4 and i not in teams):
+			G[count][elem]=i
 			elem = 0
 			count +=1
 		#At this point if we find another team we start a new game element
-		elif(elem == 3 and i in teams):
+		elif(elem == 4 and i in teams):
 			count +=1
 			G[count][0] = i
 			elem = 1
@@ -225,34 +228,60 @@ while (True):
 		except:
 			print("except")
 
+
+		try:
+			games[k][1] = int(games[k][1])
+			currentGames[k][1] = int(currentGames[k][1])
+			games[k][3] = int(games[k][3])
+			currentGames[k][3] = int(currentGames[k][3])
+		except:
+			print("except")
 		#create a game info string
 		gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB
-		if(currentGames[k] != games[k]):
-		#there is some change lets see what
-			#default for text, if unchanged there is an issue
-			text = "something went wrong!"
-			#if the score of team 1 is greater they scored toast accordingly
-			if  (currentGames[k][1] > games[k][1]):
-				text = teamA + " goal!"
-				ico = icoA
-			#team a goal count drops
-			elif(currentGames[k][1] < games[k][1]):
-				text = teamA + " goal disallowed!"
-				ico = icoA
-			#if the score of team 2 is greater they scored toast accordingly
-			elif(currentGames[k][3] > games[k][3]):
-				text = teamB + " goal!"
-				ico = icoB
-			#team b goal count drops
-			elif(currentGames[k][3] < games[k][3]):
-				text = teamB + " goal disallowed!"
-				ico = icoB
-			#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
-			elif(type(currentGames[k][1])==int and (type(games[k][1])!=int)):
-				text = teamA + " vs " + teamB + ": kick off"
-				ico = icoA
-				
+		
+		T= 0
+		#if the score of team 1 is greater they scored toast accordingly
+		if  (currentGames[k][1] > games[k][1] and type(games[k][1]) == int ):
+			text = teamA + " goal! Minute: " + str(currentGames[k][4]) 
+			ico = icoA
+			T = 1
+		#team a goal count drops
+		elif(currentGames[k][1] < games[k][1] and type(games[k][1])== int):
+			text = teamA + " goal disallowed!"
+			ico = icoA
+			T = 1
+		#if the score of team 2 is greater they scored toast accordingly
+		elif(currentGames[k][3] > games[k][3] and type(games[k][3]) == int):
+			text = teamB + " goal! Minute: " + str(currentGames[k][4]) 
+			ico = icoB
+			T = 1
+		#team b goal count drops
+		elif(currentGames[k][3] < games[k][3] and type(games[k][1])== int):
+			text = teamB + " goal disallowed!"
+			ico = icoB
+			T = 1
+		elif(currentGames[k][4]== "HT" and games[k][4] != "HT"):
+			text = "Half Time"
+			ico = icoA
+			T = 1
+		elif(currentGames[k][4]== "FT" and games[k][4] != "FT"):
+			text = "Full Time" 
+			ico = icoA
+			T = 1
+		elif(games[k][4] == "HT" and currentGames[k][4] != "HT"):
+			text = "Second half underway"
+			ico = icoA
+			T = 1
+		#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
+		elif((currentGames[k][1])==0 and (type(games[k][1])!=int)):
+			text = teamA + " vs " + teamB + ": kick off"
+			ico = icoA
+			T = 1
+			
+
+		if(T):
 			toaster.show_toast(text, gameinfo, threaded=True,icon_path=ico, duration=None)
+		
 				
 		
 		time.sleep(1)
