@@ -1,7 +1,3 @@
-##Note this is untested on this seasons teams, it works on last seasons teams until
-##it reaches the relegated teams
-##If you run it on future games it will give the fixtures and game times
-
 import time
 import datetime
 from win10toast import ToastNotifier
@@ -16,8 +12,8 @@ toaster.show_toast("Score Alerts Online", "Premier League Live Score Alerts", th
 
 #get games from the bbc site and return the games as a list
 def getGames():
-	#request and parse text from the html
-	url ='https://www.bbc.com/sport/football/premier-league/scores-fixtures/2020-09'
+	#request and parse text from the html, bbc site splits games by month so this needs to be updated monthly
+	url ='https://www.bbc.com/sport/football/premier-league/scores-fixtures/2020-10'
 	res = requests.get(url)	
 	html_page = res.content
 	soup = BeautifulSoup(html_page, 'html.parser')
@@ -89,7 +85,6 @@ def getGames():
 
 		if(i == 'Content'):flag = 1
 		if(i == 'All'):flag =0
-	print(gamesA)
 	#Team names are duplicated by links, some teams also have similar names 
 	#So we remove to use single unique words for teams
 	i = 0
@@ -104,12 +99,12 @@ def getGames():
 
 	#G will store the score information, scores are of the format Team score Team score
 	#So we fill accordingly
-	G = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
+	G = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 	elem = 0
 	count = 0
 	#loop through the text, pull out the team names and scores
 	for i in gamesA:
-
+		print(count)
 		#First piece of each game element is the first team
 		if(i in teams and elem == 0):
 			G[count][elem] = i
@@ -129,6 +124,7 @@ def getGames():
 		elif(elem == 3 and i not in teams):
 			G[count][elem] = i
 			elem = 4
+		#the final value can hold the time var
 		elif(elem == 4 and i not in teams):
 			G[count][elem]=i
 			elem = 0
@@ -141,7 +137,7 @@ def getGames():
 	#return list of game strings
 	return G
 
-def teamGoalinfo(team):
+def teamInfo(team):
 		#this function is used to match unique keywords to full team name text and icon path.
 		case = str(team)
 
@@ -223,8 +219,8 @@ while (True):
 		print('------------------------')
 		#grab real team names and icons
 		try:
-			teamA,icoA = teamGoalinfo( currentGames[k][0] )
-			teamB,icoB = teamGoalinfo( currentGames[k][2] )
+			teamA,icoA = teamInfo( currentGames[k][0] )
+			teamB,icoB = teamInfo( currentGames[k][2] )
 		except:
 			print("except")
 
@@ -240,45 +236,51 @@ while (True):
 		gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB
 		
 		T= 0
-		#if the score of team 1 is greater they scored toast accordingly
-		if  (currentGames[k][1] > games[k][1] and type(games[k][1]) == int ):
-			text = teamA + " goal! Minute: " + str(currentGames[k][4]) 
-			ico = icoA
-			T = 1
-		#team a goal count drops
-		elif(currentGames[k][1] < games[k][1] and type(games[k][1])== int):
-			text = teamA + " goal disallowed!"
-			ico = icoA
-			T = 1
-		#if the score of team 2 is greater they scored toast accordingly
-		elif(currentGames[k][3] > games[k][3] and type(games[k][3]) == int):
-			text = teamB + " goal! Minute: " + str(currentGames[k][4]) 
-			ico = icoB
-			T = 1
-		#team b goal count drops
-		elif(currentGames[k][3] < games[k][3] and type(games[k][1])== int):
-			text = teamB + " goal disallowed!"
-			ico = icoB
-			T = 1
-		elif(currentGames[k][4]== "HT" and games[k][4] != "HT"):
-			text = "Half Time"
-			ico = icoA
-			T = 1
-		elif(currentGames[k][4]== "FT" and games[k][4] != "FT"):
-			text = "Full Time" 
-			ico = icoA
-			T = 1
-		elif(games[k][4] == "HT" and currentGames[k][4] != "HT"):
-			text = "Second half underway"
-			ico = icoA
-			T = 1
-		#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
-		elif((currentGames[k][1])==0 and (type(games[k][1])!=int)):
-			text = teamA + " vs " + teamB + ": kick off"
+		
+		#if the scores are of var int, the game is now underway and we can check for changes.
+		if(type(currentGames[k][1]) == int and type(games[k][1] == int)):	
+			#if team a goal count goes up they scored
+			if  (currentGames[k][1] > games[k][1] ):
+				text = teamA + " goal! Minute: " + str(currentGames[k][4]) 
+				ico = icoA
+				T = 1
+			#team a goal count drops
+			elif(currentGames[k][1] < games[k][1] ):
+				text = teamA + " goal disallowed!"
+				ico = icoA
+				T = 1
+			#if the score of team 2 is greater they scored toast accordingly
+			elif(currentGames[k][3] > games[k][3] ):
+				text = teamB + " goal! Minute: " + str(currentGames[k][4]) 
+				ico = icoB
+				T = 1
+			#team b goal count drops
+			elif(currentGames[k][3] < games[k][3] ):
+				text = teamB + " goal disallowed!"
+				ico = icoB
+				T = 1
+			#time var becomes HT, half time
+			elif(currentGames[k][4]== "HT" and games[k][4] != "HT"):
+				text = "Half Time"
+				ico = icoA
+				T = 1
+			#time var becomes FT, game over
+			elif(currentGames[k][4]== "FT" and games[k][4] != "FT"):
+				text = "Full Time" 
+				ico = icoA
+				T = 1
+			#time var was HT not anymore, second half started
+			elif(games[k][4] == "HT" and currentGames[k][4] != "HT"):
+				text = "Second half underway"
+				ico = icoA
+				T = 1
+
+		#If the time variable is an int and wasnt before is kick off"
+		if(type(currentGames[k][4])== int and type(games[k][4])!= int):
+			text = "Kick off"
 			ico = icoA
 			T = 1
 			
-
 		if(T):
 			toaster.show_toast(text, gameinfo, threaded=True,icon_path=ico, duration=None)
 		
@@ -289,5 +291,5 @@ while (True):
 	print('========================')
 	#reset the previous games holder
 	games = currentGames
-	time.sleep(30)
+	time.sleep(15)
 
