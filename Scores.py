@@ -8,7 +8,7 @@ import requests
 #Toast to show online
 toaster = ToastNotifier()
 toaster.show_toast("Score Alerts Online", "Premier League Live Score Alerts", threaded=True,
-                   icon_path='pl_icon.ico' , duration=None)  
+                   icon_path='./ico/pl_icon.ico' , duration=None)  
 
 #get games from the bbc site and return the games as a list
 def getGames():
@@ -104,7 +104,6 @@ def getGames():
 	count = 0
 	#loop through the text, pull out the team names and scores
 	for i in gamesA:
-		print(count)
 		#First piece of each game element is the first team
 		if(i in teams and elem == 0):
 			G[count][elem] = i
@@ -201,7 +200,8 @@ def teamInfo(team):
 		elif case == "Arsenal":
 			text = "Arsenal"
 			ico  = "ars.ico"
-		
+
+		ico = "./ico/"+str(ico)
 		#return path and text
 		return text,ico
 
@@ -222,7 +222,7 @@ while (True):
 			teamA,icoA = teamInfo( currentGames[k][0] )
 			teamB,icoB = teamInfo( currentGames[k][2] )
 		except:
-			print("except")
+			print("Game not in play")
 
 
 		try:
@@ -276,17 +276,17 @@ while (True):
 				T = 1
 
 		#If the time variable is an int and wasnt before is kick off"
-		if(type(currentGames[k][4])== int and type(games[k][4])!= int):
+		if(type(currentGames[k][4])== int and type(games[k][4])!= int and games[k][4]!= "HT"):
 			text = "Kick off"
 			ico = icoA
 			T = 1
 			
 		if(T):
 			toaster.show_toast(text, gameinfo, threaded=True,icon_path=ico, duration=None)
-		
+			time.sleep(1)
 				
 		
-		time.sleep(1)
+		
 
 	print('========================')
 	#reset the previous games holder
