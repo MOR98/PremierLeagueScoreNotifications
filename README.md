@@ -1,4 +1,4 @@
 # PremierLeagueScoreNotifications
-This script parses the BBC premier league score page, identifies individual games and monitors them for changes. The Premier league is back ! The script is now tested and working, it will notify updates for kick off, scores and full time. Currently it cannot distinguish between score/kick-off/full-time as I wanted to test it on live scores. I will soon update to notify specifically the event and or the relevant team.
+This script parses the BBC premier league score page, identifies individual games and monitors them for changes. The Premier league is back ! The script is now tested and working, it will now notoify goals, disallowed goals, kick off, half time, seconf half, and full time.
 
-To run, double click setupScores.bat to install libraries then run scores.py in python.
+To run, double click scores.bat (change directory to match the script location) to install libraries then run scores.py in python.
