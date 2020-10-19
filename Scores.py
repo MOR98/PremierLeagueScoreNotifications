@@ -4,6 +4,11 @@ from win10toast import ToastNotifier
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
+from os import system, name
+
+def clear():
+		_ = system('cls')
+
 
 #Toast to show online
 toaster = ToastNotifier()
@@ -209,6 +214,7 @@ def teamInfo(team):
 #Get initial scores
 games = getGames()
 while (True):
+	clear()
 	print('==================================')
 	#grab the latest scores
 	currentGames = getGames()
