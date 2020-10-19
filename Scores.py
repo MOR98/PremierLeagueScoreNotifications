@@ -8,7 +8,7 @@ import requests
 #Toast to show online
 toaster = ToastNotifier()
 toaster.show_toast("Score Alerts Online", "Premier League Live Score Alerts", threaded=True,
-                   icon_path='./ico/pl_icon.ico' , duration=None)  
+                   icon_path='./ico/pl_icon.ico' , duration=5)  
 
 #get games from the bbc site and return the games as a list
 def getGames():
@@ -209,32 +209,30 @@ def teamInfo(team):
 #Get initial scores
 games = getGames()
 while (True):
+	print('==================================')
 	#grab the latest scores
 	currentGames = getGames()
 	k=0
 	#check each game 
 	for k in range (len(currentGames)):
-		#for debug
-		print(currentGames[k])
-		print('------------------------')
 		#grab real team names and icons
 		try:
 			teamA,icoA = teamInfo( currentGames[k][0] )
 			teamB,icoB = teamInfo( currentGames[k][2] )
 		except:
-			print("Game not in play")
-
-
+			dummy = False
 		try:
 			games[k][1] = int(games[k][1])
 			currentGames[k][1] = int(currentGames[k][1])
 			games[k][3] = int(games[k][3])
 			currentGames[k][3] = int(currentGames[k][3])
 		except:
-			print("except")
+			print("This game has not started")
 		#create a game info string
-		gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB
-		
+		gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB+" "+str(currentGames[k][4])
+		if(currentGames[k][0]!= 0):
+			print(gameinfo)
+			print("----------------------------------")
 		T= 0
 		
 		#if the scores are of var int, the game is now underway and we can check for changes.
@@ -276,7 +274,7 @@ while (True):
 				T = 1
 
 		#If the time variable is an int and wasnt before is kick off"
-		if(type(currentGames[k][4])== int and type(games[k][4])!= int and games[k][4]!= "HT"):
+		if(((type(currentGames[k][4])== int and type(games[k][4])!= int) and games[k][4]!= "HT") or (currentGames[k][4] !=0 and games[k][4]==0)):
 			text = "Kick off"
 			ico = icoA
 			T = 1
@@ -288,8 +286,8 @@ while (True):
 		
 		
 
-	print('========================')
+	print('==================================')
 	#reset the previous games holder
 	games = currentGames
-	time.sleep(15)
+	time.sleep(90)
 
