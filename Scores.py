@@ -1,23 +1,38 @@
-##Note this is untested on this seasons teams, it works on last seasons teams until
-##it reaches the relegated teams
-##If you run it on future games it will give the fixtures and game times
-
 import time
-import datetime
+from datetime import date
 from win10toast import ToastNotifier
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 import requests
+from os import system, name
+import PySimpleGUI as sg
+
+layout = [
+[sg.Text('', key='_games_', size=(50, 20))],
+[sg.Button('Notifications'),sg.Text('ON',size = (20,1),key = '_notify_')]
+]
+
+window = sg.Window('Premier League for Windows', layout,icon='ico/pl_icon.ico',finalize =True )
+
+today = date.today()
+month = str(today.month)
+if(len(month)==1):
+	month = "0" + month
+
+x =str(today.year) + "-" + month
+def clear():
+		_ = system('cls')
+
 
 #Toast to show online
 toaster = ToastNotifier()
 toaster.show_toast("Score Alerts Online", "Premier League Live Score Alerts", threaded=True,
-                   icon_path='pl_icon.ico' , duration=None)  
+                   icon_path='./ico/pl_icon.ico' , duration=5)  
 
 #get games from the bbc site and return the games as a list
 def getGames():
-	#request and parse text from the html
-	url ='https://www.bbc.com/sport/football/premier-league/scores-fixtures/2020-09'
+	#request and parse text from the html, bbc site splits games by month so this needs to be updated monthly
+	url ='https://www.bbc.com/sport/football/premier-league/scores-fixtures/'+ x
 	res = requests.get(url)	
 	html_page = res.content
 	soup = BeautifulSoup(html_page, 'html.parser')
@@ -89,7 +104,6 @@ def getGames():
 
 		if(i == 'Content'):flag = 1
 		if(i == 'All'):flag =0
-	
 	#Team names are duplicated by links, some teams also have similar names 
 	#So we remove to use single unique words for teams
 	i = 0
@@ -104,12 +118,11 @@ def getGames():
 
 	#G will store the score information, scores are of the format Team score Team score
 	#So we fill accordingly
-	G = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+	G = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]]
 	elem = 0
 	count = 0
 	#loop through the text, pull out the team names and scores
 	for i in gamesA:
-
 		#First piece of each game element is the first team
 		if(i in teams and elem == 0):
 			G[count][elem] = i
@@ -128,131 +141,195 @@ def getGames():
 		#Then add the second team info
 		elif(elem == 3 and i not in teams):
 			G[count][elem] = i
+			elem = 4
+		#the final value can hold the time var
+		elif(elem == 4 and i not in teams):
+			G[count][elem]=i
 			elem = 0
 			count +=1
 		#At this point if we find another team we start a new game element
-		elif(elem == 3 and i in teams):
+		elif(elem == 4 and i in teams):
 			count +=1
 			G[count][0] = i
 			elem = 1
 	#return list of game strings
+	print(G)
 	return G
 
-def teamGoalinfo(team):
+def teamInfo(team):
 		#this function is used to match unique keywords to full team name text and icon path.
 		case = str(team)
 
 		if  case == "City":
-			text = "Man City Score!"
+			text = "Man City"
 			ico  = "mci.ico"
 		elif case == "Utd":
-			text = "Man Utd Score!"
+			text = "Man Utd"
 			ico  = "utd.ico"
 		elif case == "Liverpool":
-			text = "Liverpool Score!"
+			text = "Liverpool"
 			ico  = "liv.ico"
 		elif case == "Chelsea":
-			text = "Chelsea Score!"
+			text = "Chelsea"
 			ico  = "chl.ico"
 		elif case == "Fulham":
-			text = "Fulham Score!"
+			text = "Fulham"
 			ico  = "fha.ico"
 		elif case == "Leicester":
-			text = "Leicester Score!"
+			text = "Leicester"
 			ico  = "lei.ico"
 		elif case == "Newcastle":
-			text = "Newcastle Score!"
+			text = "Newcastle"
 			ico  = "ncs.ico"
 		elif case == "Ham":
-			text = "West Ham Score!"
+			text = "West Ham"
 			ico  = "ham.ico"
 		elif case == "Aston":
-			text = "Aston Villa Score!"
+			text = "Aston Villa"
 			ico  = "vil.ico"
 		elif case == "Everton":
-			text = "Everton Score!"
+			text = "Everton"
 			ico  = "evt.ico"
 		elif case == "Bromwich":
-			text = "West Brom Score!"
+			text = "West Brom"
 			ico  = "wba.ico"
 		elif case == "Crystal":
-			text = "Crystal Palace Score!"
+			text = "Crystal Palace"
 			ico  = "pal.ico"
 		elif case == "Tottenham":
-			text = "Tottenham Score!"
+			text = "Tottenham"
 			ico  = "ths.ico"
 		elif case == "Southampton":
-			text = "Southampton Score!"
+			text = "Southampton"
 			ico  = "sfc.ico"
 		elif case == "Burnley":
-			text = "Burnley Score!"
+			text = "Burnley"
 			ico  = "bfc.ico"
 		elif case == "Wolves":
-			text = "Wolves Score!"
+			text = "Wolves"
 			ico  = "wfc.ico"
 		elif case == "Sheff":
-			text = "Sheffield Utd Score!"
+			text = "Sheffield Utd"
 			ico  = "sut.ico"
 		elif case == "Leeds":
-			text = "Leeds Score!"
+			text = "Leeds"
 			ico  = "lds.ico"
 		elif case == "Brighton":
-			text = "Brighton & Hove Albion Score!"
+			text = "Brighton & Hove Albion"
 			ico  = "brf.ico"
 		elif case == "Arsenal":
-			text = "Arsenal Score!"
+			text = "Arsenal"
 			ico  = "ars.ico"
-		
+
+		ico = "./ico/"+str(ico)
 		#return path and text
 		return text,ico
 
-
-#Get initial scores
-games = getGames()
-
-while (True):
+def printDetails(games,notify):
+	GameOut = ""
+	window.Refresh()
 	#grab the latest scores
 	currentGames = getGames()
 	k=0
-	i=0
-
 	#check each game 
 	for k in range (len(currentGames)):
-		#for debug
-		print(currentGames[k])
-		print('------------------------')
+		if(games[k][0]!=0):
+			#grab real team names and icons
+			try:
+				teamA,icoA = teamInfo( currentGames[k][0] )
+				teamB,icoB = teamInfo( currentGames[k][2] )
+			except:
+				dummy = False
+			try:
+				games[k][1] = int(games[k][1])
+				currentGames[k][1] = int(currentGames[k][1])
+				games[k][3] = int(games[k][3])
+				currentGames[k][3] = int(currentGames[k][3])
+			except:
+				print("This game has not started")
+				currentGames[k][1]= "0"
+				currentGames[k][3]= "0"
+				currentGames[k][4]= "Not Yet Started"
+			#create a game info string
 
-		#if the score of team 1 is different they scored toast accordingly
-		if((currentGames[k][1] != games[k][1]) and currentGames[k][3] == games[k][3]):
-			#first team scored
-			text,ico = teamGoalinfo( currentGames[k][0] )
-			gameinfo=  str(currentGames[k][0])+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+str(currentGames[k][2])
+			gameinfo=  teamA+" "+ str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+teamB+" | "+str(currentGames[k][4])
+			print(gameinfo)
+			GameOut = GameOut + '\n' + gameinfo + '\n' 
+				
+			T= 0
+			
+			#if the scores are of var int, the game is now underway and we can check for changes.
+			if(type(currentGames[k][1]) == int and type(games[k][1] == int)):	
+				#if team a goal count goes up they scored
+				if  (currentGames[k][1] > games[k][1] ):
+					text = teamA + " goal! Minute: " + str(currentGames[k][4]) 
+					ico = icoA
+					T = 1
+				#team a goal count drops
+				elif(currentGames[k][1] < games[k][1] ):
+					text = teamA + " goal disallowed!"
+					ico = icoA
+					T = 1
+				#if the score of team 2 is greater they scored toast accordingly
+				elif(currentGames[k][3] > games[k][3] ):
+					text = teamB + " goal! Minute: " + str(currentGames[k][4]) 
+					ico = icoB
+					T = 1
+				#team b goal count drops
+				elif(currentGames[k][3] < games[k][3] ):
+					text = teamB + " goal disallowed!"
+					ico = icoB
+					T = 1
+				#time var becomes HT, half time
+				elif(currentGames[k][4]== "HT" and games[k][4] != "HT"):
+					text = "Half Time"
+					ico = icoA
+					T = 1
+				#time var becomes FT, game over
+				elif(currentGames[k][4]== "FT" and games[k][4] != "FT"):
+					text = "Full Time" 
+					ico = icoA
+					T = 1
+				#time var was HT not anymore, second half started
+				elif(games[k][4] == "HT" and currentGames[k][4] != "HT"):
+					text = "Second half underway"
+					ico = icoA
+					T = 1
 
-			toaster.show_toast(text, gameinfo, threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
+			#If the time variable is an int and wasnt before is kick off"
+			if(((type(currentGames[k][4])== int and type(games[k][4])!= int) and games[k][4]!= "HT") or (currentGames[k][4] !=0 and games[k][4]==0  and type(games[k][4])!= int)):
+				text = "Kick off"
+				ico = icoA
+				T = 1
+				
+			if(T and notify):
+				toaster.show_toast(text, gameinfo, threaded=True,icon_path=ico, duration=None)
+				time.sleep(1)
+			print(notify)
+			print(GameOut)
+	return currentGames,GameOut
+#Get initial scores
+counter = 0
+text = "Loading..."
+games = getGames()
+notify = True
+while (True):
+	event,value = window.Read(timeout = 10)
+	if event in (None, 'Quit'):
+            break
+	elif event == "Notifications":
+		notify = not notify
+		if notify:
+			window.FindElement('_notify_').Update('ON')
+		else:
+			window.FindElement('_notify_').Update('OFF')
 
-		#if the score of team 2 is different they scored toast accordingly
-		if((currentGames[k][1] == games[k][1]) and currentGames[k][3] != games[k][3]):
-			#Second team scored
-			text,ico = teamGoalinfo( currentGames[k][2] )
-			gameinfo=  str(currentGames[k][0])+" " + str(currentGames[k][1])+"-"+str(currentGames[k][3])+" "+str(currentGames[k][2])
+	counter = counter + 1
+	if(counter == 10000):
+		games, text = printDetails(games,notify)
+		print(text)
+		counter = 0
 
-			toaster.show_toast( text,gameinfo ,threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
-
-		#If the "score var goes from text (game time or something) to an int the game started it is 0-0, kick off"
-		if((type(currentGames[k][1])==int) and (type(games[k][1])==str)):
-			#this means kick off
-			text = str(currentGames[k][0]) + " vs " + str(currentGames[k][2]) + ": kick off"
-			dummy,ico = teamGoalinfo(currentGames[k][0])
-			toaster.show_toast(text, text, threaded=True,
-                   icon_path=ico, duration=None)
-			time.sleep(1)
-
-	print('========================')
+	window.FindElement('_games_').Update(text)
 	#reset the previous games holder
-	games = currentGames
-	time.sleep(30)
-
+window.Close()
